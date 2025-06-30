@@ -5,7 +5,7 @@
 
 ## Overview:
 
-This repository provides the implementation of **Bayesian Sparse Regression for Microbiome-Metabolite Data Integration (BSRMM)**. This method enables joint modeling of high-dimensional microbiome predictors and metabolomic outcomes. It allows for variable selection and outcome missing value imputation under a fully Bayesian framework.
+This repository provides the implementation of **Bayesian Sparse Regression for Microbiome-Metabolite Data Integration (BSRMM)**. This method enables joint modeling of high-dimensional microbiome predictors and metabolomic outcomes. The BSRMM model is implemented in R and is designed for for variable selection and outcome missing value imputation.
 
 ## Directory Structure:
 
@@ -13,10 +13,9 @@ This repository provides the implementation of **Bayesian Sparse Regression for 
 - `realdata/` – Contains scripts and preprocessed datasets for real-world applications.
 
 ## Key functions:
-\begin{itemize}
+- `bsrmm`: The main function to fit the BSRMM model.
 
-\item `bsrmm`: The main function to fit the BSRMM model.
+- `Comp_lasso` and `BAZE`: Compared methods. 
 
-\item `Comp_lasso` and `BAZE`: Compared methods. 
-
-\end{itemize}
+## Example: 
+Under the `simulation/` directory, you can find a script named as example to run all functions from simualtioned data to evluate the perforamnce. 
