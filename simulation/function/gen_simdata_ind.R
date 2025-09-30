@@ -2,7 +2,9 @@ gen_simdata_ind <- function(n, p, gamma, b, theta, sigmaX, sigma) {
   # Calculate beta as element-wise multiplication of gamma and b
   beta <- gamma * b
   # Generate matrix X of dimensions n x p, with N(0, sigmaX^2)
-  X <- matrix(theta + sigmaX * rnorm(n*p),n, p)
+  X <- matrix(rnorm(n * p, mean = 0, sd = sigmaX), nrow = n, ncol = p)
+  X <- sweep(X, 2, theta, FUN = "+")
+  
   # Generate noise epsilon with N(0, sigma^2)
   epsilon <- sigma * rnorm(n)
   

@@ -287,7 +287,7 @@ if (sum(PPI > 0.5) == 0) {
   
   # beta_0
   beta_0 <- mean(bsrmm$beta_0[(nburnin+2):(nburnin+niter+1)])
-  coef_l2 <- sqrt((0 - beta_0)^2 + sum((mydata$coeffs[, 2] - beta_final)^2))
+  coef_l2 <- sqrt(sum((mydata$coeffs[, 2] - beta_final)^2))
   
   # store result
   result <- list(TPR = TPR, FNR = FNR, TNR = TNR, FPR = FPR, TP = TP, FN = FN, TN = TN, FP = FP, 
