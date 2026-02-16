@@ -143,7 +143,7 @@ beta_select[which(PPI > 0.5)] <- 1
 ```
 
 ### Check selected predictors vs true nonzero coefficients
-```{r, comment=""}
+```{r echo=FALSE, comment=""}
 selected <- which(PPI > 0.5)
 true_nz  <- which(mydata$coeffs[,1] != 0)
 
@@ -155,7 +155,7 @@ cat(sprintf(" - Accuracy: %d out of %d true signals recovered.\n",
 ```
 
 ### Coefficients estimation plots
-```{r}
+```{r echo=FALSE}
 beta_esti <- bsrmm$tembeta_save
 beta_esti <- beta_esti[which(PPI > 0.5), (nburnin+2):(nburnin+niter+1)]
 beta_esti[is.na(beta_esti)] <- 0
@@ -188,7 +188,7 @@ for (i in 1:nrow(beta_result)) {
 
 ### Missing value imputation performance
 
-```{r}
+```{r echo=FALSE}
 # posterior mean for MVI
 Y_mvi <- bsrmm$Y_mvi[(which(bsrmm$Ri==0)), (nburnin+2):(nburnin+niter+1)]
 Y_true <- as.matrix(mydata$Y_true)

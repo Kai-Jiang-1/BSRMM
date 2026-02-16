@@ -164,98 +164,18 @@ beta_select[which(PPI > 0.5)] <- 1
 
 ### Check selected predictors vs true nonzero coefficients
 
-``` r
-selected <- which(PPI > 0.5)
-true_nz  <- which(mydata$coeffs[,1] != 0)
-
-cat(sprintf("Selection Results:\n"))
-```
-
     Selection Results:
-
-``` r
-cat(sprintf(" - Selected Predictors: %s\n", paste(selected, collapse = ", ")))
-```
 
      - Selected Predictors: 1, 2, 3, 6, 7, 8
 
-``` r
-cat(sprintf(" - True Predictors:     %s\n", paste(true_nz, collapse = ", ")))
-```
-
      - True Predictors:     1, 2, 3, 6, 7, 8
-
-``` r
-cat(sprintf(" - Accuracy: %d out of %d true signals recovered.\n", 
-            length(intersect(selected, true_nz)), length(true_nz)))
-```
 
      - Accuracy: 6 out of 6 true signals recovered.
 
 ### Coefficients estimation plots
 
-``` r
-beta_esti <- bsrmm$tembeta_save
-beta_esti <- beta_esti[which(PPI > 0.5), (nburnin+2):(nburnin+niter+1)]
-beta_esti[is.na(beta_esti)] <- 0
-beta_esti <- sweep(beta_esti, 1, STATS =  stand$Sx[which(PPI > 0.5)], FUN = "/")
-beta_result <- data.frame(
-  param = c(paste0("beta", which(PPI > 0.5))),
-  mean = rowMeans(beta_esti),
-  Lower_CrI = apply(beta_esti, 1, function(x) quantile(x, probs = 0.025)),
-  Upper_CrI = apply(beta_esti, 1, function(x) quantile(x, probs = 0.975))
-)
-
-beta_result$True_value <- mydata$coeffs[which(PPI > 0.5), 2]
-
-par(mfrow =c(2,3))
-
-for (i in 1:nrow(beta_result)) {
-  # Plot the trace of the MCMC samples
-  plot(beta_esti[i, ], 
-       type = "l", 
-       main = paste0("Coefficient: ", beta_result$param[i]), 
-       xlab = "MCMC Iteration", 
-       ylab = "Value",
-       col  = "steelblue", 
-       lwd  = 1)
-  
-  # Add Ground Truth (Dashed Red)
-  abline(h = beta_result$True_value[i], col = "red", lwd = 2, lty = 2)
-}
-```
-
 ![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ### Missing value imputation performance
-
-``` r
-# posterior mean for MVI
-Y_mvi <- bsrmm$Y_mvi[(which(bsrmm$Ri==0)), (nburnin+2):(nburnin+niter+1)]
-Y_true <- as.matrix(mydata$Y_true)
-Y_true_train <- as.matrix(Y_true[train_ind, ])
-Y_true_train <- Y_true_train[which(bsrmm$Ri==0), ]
-
-mvi_result <- rowMeans(Y_mvi)
-mvi_result <- data.frame(
-  ground_truth = Y_true_train,
-  mean = rowMeans(Y_mvi),
-  Lower_CrI = apply(Y_mvi, 1, function(x) quantile(x, probs = 0.025)),
-  Upper_CrI = apply(Y_mvi, 1, function(x) quantile(x, probs = 0.975))
-)
-
-ggplot(mvi_result, aes(x = ground_truth, y = mean)) +
-    # Add the vertical error bars for CrI
-    geom_errorbar(aes(ymin = Lower_CrI, ymax = Upper_CrI), 
-                  width = 0.1, color = "gray", alpha = 0.6) +
-    # Add the scatter points
-    geom_point(color = "blue", size = 1.5) +
-    # Add a 45-degree reference line (Ideal prediction where mean == ground_truth)
-    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
-    # Labels and Theme
-    labs(x = "Ground truth values",
-         y = "Imputed values from BSRMM with 95% CrI") +
-    theme_classic()
-```
 
 ![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
