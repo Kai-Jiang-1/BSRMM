@@ -4,8 +4,7 @@ Kai Jiang
 
 # BSRMM
 
-Bayesian Reduced Rank Regression for Microbiome-Metabolite Data
-Integration
+Bayesian Sparse Regression for Microbiome–Metabolite Data Integration
 
 **Author**: Kai Jiang  
 **Reference**: Jiang K, Saha S, Peterson CB. Bayesian sparse regression
@@ -14,17 +13,19 @@ for microbiome-metabolite data integration.
 ## Overview
 
 This repository provides the implementation of **Bayesian Sparse
-Regression for Microbiome-Metabolite Data Integration (BSRMM)**. This
-method enables joint modeling of high-dimensional microbiome predictors
-and metabolomic outcomes. The BSRMM model is implemented in R and is
-designed for variable selection and missing value imputation for
-outcomes.
+Regression for Microbiome-Metabolite Data Integration (BSRMM)** model.
 
-## Directory Structure
+The proposed framework enables: \* **Joint modeling** of
+high-dimensional compositional microbiome predictors. \* **Variable
+selection** via posterior inclusion probabilities (PPI). \* **Missing
+value imputation** for metabolomic outcomes.
 
-- `code/` – Contains scripts to generate simulated datasets and run the
-  BSRMM model.
-- `data/` – Contains simulated datasets.
+The model is implemented in R using **Gibbs sampling**.
+
+## Repository Structure
+
+- `code/` – Scripts for data generation and run the BSRMM model
+- `data/` – Simulated datasets
 - `function` - Contains the implementation of the BSRMM model and
   simulation functions.
 - `plot` - Contains MCMC diagnostic plots.
@@ -34,8 +35,6 @@ outcomes.
 ## Example
 
 ``` r
-setwd("/Users/kjiang/Desktop/BSRMM/")
-
 # functions 
 source("./function/bsrmmgibbs.R")
 source("./function/bsrmmbf.R")
@@ -51,7 +50,7 @@ library(knitr)
 library(ggplot2)
 ```
 
-### Import simulated datasets
+### Import dataset
 
 ``` r
 # import data 
@@ -62,21 +61,11 @@ predictor <- mydata$X
 outcome <- mydata$Y_miss
 ```
 
-### Check the true nonzero coefficients
-
-``` r
-cat("The nonzero coefficients are: ", which(mydata$coeffs[,1] != 0), "\n")
-```
-
     The nonzero coefficients are:  1 2 3 6 7 8 
-
-``` r
-cat("The value of the nonzero coefficients are: ", mydata$coeffs[which(mydata$coeffs[,1] != 0),2], "\n")
-```
 
     The value of the nonzero coefficients are:  1 -0.8 0.6 -1.5 -0.5 1.2 
 
-### Split the data into train and test sets, and prepare for BSRMM model fitting
+### Model Fitting
 
 ``` r
 # consider scale and center the predictor before split
@@ -135,8 +124,6 @@ niter <- 20000
 nop <- floor(n/2)
 ```
 
-### Construct the Q matrix and initialize the hyperparameters for BSRMM model fitting
-
 ``` r
 Q <- diag(0,nrow = p) 
 
@@ -162,7 +149,7 @@ beta_select <- rep(0, ncol(X))
 beta_select[which(PPI > 0.5)] <- 1
 ```
 
-### Check selected predictors vs true nonzero coefficients
+### Variable Selection
 
     Selection Results:
 
@@ -172,10 +159,14 @@ beta_select[which(PPI > 0.5)] <- 1
 
      - Accuracy: 6 out of 6 true signals recovered.
 
-### Coefficients estimation plots
-
-![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
-### Missing value imputation performance
-
 ![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+### Missing Value Imputation
+
+![](README_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+## Citation
+
+If you use this repository, please cite: **Reference**: Jiang K, Saha S,
+Peterson CB. Bayesian Sparse Regression for Microbiome–Metabolite Data
+Integration.
