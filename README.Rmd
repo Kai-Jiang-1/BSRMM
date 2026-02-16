@@ -14,9 +14,10 @@ Bayesian Sparse Regression for Microbiome–Metabolite Data Integration
 This repository provides the implementation of **Bayesian Sparse Regression for Microbiome-Metabolite Data Integration (BSRMM)** model. 
 
 The proposed framework enables:
-* **Joint modeling** of high-dimensional compositional microbiome predictors.
-* **Variable selection** via posterior inclusion probabilities (PPI).
-* **Missing value imputation** for metabolomic outcomes.
+
+* **Joint modeling** of high-dimensional compositional microbiome predictors. 
+* **Variable selection** via posterior inclusion probabilities (PPI). 
+* **Missing value imputation** for metabolomic outcomes. 
 
 The model is implemented in R using **Gibbs sampling**.
 
