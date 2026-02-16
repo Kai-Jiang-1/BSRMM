@@ -1,0 +1,8 @@
+truncnorm
+mvnfast
+MASS
+coda
+MCMCpack
+reshape2
+knitr
+ggplot2

@@ -32,3 +32,230 @@ outcomes.
   R-hat values.
 
 ## Example
+
+``` r
+setwd("/Users/kjiang/Desktop/BSRMM/")
+
+# functions 
+source("./function/bsrmmgibbs.R")
+source("./function/bsrmmbf.R")
+
+# required library
+library(truncnorm)
+library(mvnfast)
+library(MASS)
+library(coda)
+library(MCMCpack)
+library(reshape2)
+library(knitr)
+library(ggplot2)
+```
+
+### Import simulated datasets
+
+``` r
+# import data 
+mydata <- readRDS("./data/low_mnar0.33_ind_300_1000_1_0.3_1.RDS")
+
+# extract predictors and outcomes
+predictor <- mydata$X
+outcome <- mydata$Y_miss
+```
+
+### Check the true nonzero coefficients
+
+``` r
+cat("The nonzero coefficients are: ", which(mydata$coeffs[,1] != 0), "\n")
+```
+
+    The nonzero coefficients are:  1 2 3 6 7 8 
+
+``` r
+cat("The value of the nonzero coefficients are: ", mydata$coeffs[which(mydata$coeffs[,1] != 0),2], "\n")
+```
+
+    The value of the nonzero coefficients are:  1 -0.8 0.6 -1.5 -0.5 1.2 
+
+### Split the data into train and test sets, and prepare for BSRMM model fitting
+
+``` r
+# consider scale and center the predictor before split
+stand <- list()
+stand$mux <- colMeans(predictor)
+stand$Sx <- apply(predictor, 2, sd)
+predictor <- apply(predictor, 2, function(x) (x - mean(x))/sd(x))
+
+# we already performed mean or low missing value imputation during that simulation generation
+# we need to re-set the value into zero
+index <- which(mydata$Y_miss != mydata$Y_true)
+index <- sort(index)
+outcome[index] <- 0
+
+# save dt for following prediction error analysis: 0 = miss, 1 = observed
+dt <- data.frame(outcome)
+dt$Ri <- 0
+dt$Ri[which(dt$outcome != 0)] <- 1
+
+# split the data into train and test
+set.seed(33)
+seed <- 33
+
+train_ind <- sample(nrow(predictor),size = round(0.7*nrow(predictor)),replace = FALSE)
+train_ind <- sort(train_ind)
+# train_ind
+
+predictor_train <- predictor[train_ind,]
+predictor_test <- predictor[-train_ind,]
+
+outcome_train <- outcome[train_ind,]
+outcome_test <- outcome[-train_ind,]
+
+dt_train <- dt[train_ind,]
+dt_test <- dt[-train_ind,]
+
+X <- as.matrix(predictor_train)
+
+# check the outcome 
+Y <- as.matrix(outcome_train)
+
+# preparation for gibbs sampling
+n <- nrow(X)
+p <- ncol(X)
+c <- 100 # larger c to maintain the compositionality of the predictors 
+
+# construct the T matrix, because we cannot assign a matrix to T due to R's limitation 
+# we name it as N matrix 
+N <- rbind(diag(x = 1, nrow = p, ncol = p), matrix(data = c, nrow = 1, ncol = p))
+
+# number of sampling procedure 
+nburnin <- 10000
+niter <- 20000
+
+# initial number of predictors 
+nop <- floor(n/2)
+```
+
+### Construct the Q matrix and initialize the hyperparameters for BSRMM model fitting
+
+``` r
+Q <- diag(0,nrow = p) 
+
+# initial hyperparameters 
+tau <- 1 
+nu <- 0
+omega <- 0 
+
+a0 <- -12
+a <- rep(a0,p)
+
+predict_result = TRUE
+display = FALSE
+bayestmetab = TRUE
+
+# save the running time: 
+bsrmm <- bsrmmgibbs(nburnin, niter, p, nop, Y, X, N, a, Q, n, tau, nu, omega, 
+                    alpha_a_shape = 1, alpha_b_shape = 1, seed, predict_result, bayestmetab, display, lod_ratio = 1)
+
+# Result
+PPI <- colMeans(bsrmm$gamma[(nburnin+2):(nburnin+niter+1),]) # posterior probabilities of inclusion
+beta_select <- rep(0, ncol(X))
+beta_select[which(PPI > 0.5)] <- 1
+```
+
+### Check selected predictors vs true nonzero coefficients
+
+``` r
+selected <- which(PPI > 0.5)
+true_nz  <- which(mydata$coeffs[,1] != 0)
+
+cat(sprintf("Selection Results:\n"))
+```
+
+    Selection Results:
+
+``` r
+cat(sprintf(" - Selected Predictors: %s\n", paste(selected, collapse = ", ")))
+```
+
+     - Selected Predictors: 1, 2, 3, 6, 7, 8
+
+``` r
+cat(sprintf(" - True Predictors:     %s\n", paste(true_nz, collapse = ", ")))
+```
+
+     - True Predictors:     1, 2, 3, 6, 7, 8
+
+``` r
+cat(sprintf(" - Accuracy: %d out of %d true signals recovered.\n", 
+            length(intersect(selected, true_nz)), length(true_nz)))
+```
+
+     - Accuracy: 6 out of 6 true signals recovered.
+
+### Coefficients estimation plots
+
+``` r
+beta_esti <- bsrmm$tembeta_save
+beta_esti <- beta_esti[which(PPI > 0.5), (nburnin+2):(nburnin+niter+1)]
+beta_esti[is.na(beta_esti)] <- 0
+beta_esti <- sweep(beta_esti, 1, STATS =  stand$Sx[which(PPI > 0.5)], FUN = "/")
+beta_result <- data.frame(
+  param = c(paste0("beta", which(PPI > 0.5))),
+  mean = rowMeans(beta_esti),
+  Lower_CrI = apply(beta_esti, 1, function(x) quantile(x, probs = 0.025)),
+  Upper_CrI = apply(beta_esti, 1, function(x) quantile(x, probs = 0.975))
+)
+
+beta_result$True_value <- mydata$coeffs[which(PPI > 0.5), 2]
+
+par(mfrow =c(2,3))
+
+for (i in 1:nrow(beta_result)) {
+  # Plot the trace of the MCMC samples
+  plot(beta_esti[i, ], 
+       type = "l", 
+       main = paste0("Coefficient: ", beta_result$param[i]), 
+       xlab = "MCMC Iteration", 
+       ylab = "Value",
+       col  = "steelblue", 
+       lwd  = 1)
+  
+  # Add Ground Truth (Dashed Red)
+  abline(h = beta_result$True_value[i], col = "red", lwd = 2, lty = 2)
+}
+```
+
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+### Missing value imputation performance
+
+``` r
+# posterior mean for MVI
+Y_mvi <- bsrmm$Y_mvi[(which(bsrmm$Ri==0)), (nburnin+2):(nburnin+niter+1)]
+Y_true <- as.matrix(mydata$Y_true)
+Y_true_train <- as.matrix(Y_true[train_ind, ])
+Y_true_train <- Y_true_train[which(bsrmm$Ri==0), ]
+
+mvi_result <- rowMeans(Y_mvi)
+mvi_result <- data.frame(
+  ground_truth = Y_true_train,
+  mean = rowMeans(Y_mvi),
+  Lower_CrI = apply(Y_mvi, 1, function(x) quantile(x, probs = 0.025)),
+  Upper_CrI = apply(Y_mvi, 1, function(x) quantile(x, probs = 0.975))
+)
+
+ggplot(mvi_result, aes(x = ground_truth, y = mean)) +
+    # Add the vertical error bars for CrI
+    geom_errorbar(aes(ymin = Lower_CrI, ymax = Upper_CrI), 
+                  width = 0.1, color = "gray", alpha = 0.6) +
+    # Add the scatter points
+    geom_point(color = "blue", size = 1.5) +
+    # Add a 45-degree reference line (Ideal prediction where mean == ground_truth)
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+    # Labels and Theme
+    labs(x = "Ground truth values",
+         y = "Imputed values from BSRMM with 95% CrI") +
+    theme_classic()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
