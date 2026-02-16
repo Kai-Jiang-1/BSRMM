@@ -6,9 +6,7 @@ Kai Jiang
 
 Bayesian Sparse Regression for Microbiome–Metabolite Data Integration
 
-**Author**: Kai Jiang  
-**Reference**: Jiang K, Saha S, Peterson CB. Bayesian sparse regression
-for microbiome-metabolite data integration.
+**Author**: Kai Jiang, Satabdi Saha, Christine B. Peterson
 
 ## Overview
 
@@ -167,6 +165,7 @@ beta_select[which(PPI > 0.5)] <- 1
 
 ## Citation
 
-If you use this repository, please cite: **Reference**: Jiang K, Saha S,
-Peterson CB. Bayesian Sparse Regression for Microbiome–Metabolite Data
-Integration.
+If you use this repository, please cite:
+
+**Reference**: Jiang K, Saha S, Peterson CB. Bayesian Sparse Regression
+for Microbiome–Metabolite Data Integration.
