@@ -1,5 +1,3 @@
-Kai Jiang
-
 # BSRMM
 
 Bayesian Sparse Regression for Microbiome–Metabolite Data Integration
