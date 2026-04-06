@@ -1,5 +1,3 @@
-README
-================
 Kai Jiang
 
 # BSRMM
