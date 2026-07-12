@@ -166,4 +166,5 @@ beta_select[which(PPI > 0.5)] <- 1
 If you use this repository, please cite:
 
 **Reference**: Jiang K, Saha S, Peterson CB. Bayesian Sparse Regression
-for Microbiome–Metabolite Data Integration.
+for Microbiome–Metabolite Data Integration. *Statistics in Medicine*.
+2026;45(13-14):e70607. doi:10.1002/sim.70607

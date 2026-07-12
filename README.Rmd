@@ -228,4 +228,4 @@ ggplot(mvi_result, aes(x = ground_truth, y = mean)) +
 
 If you use this repository, please cite:
 
-**Reference**: Jiang K, Saha S, Peterson CB. Bayesian Sparse Regression for Microbiome–Metabolite Data Integration.
+**Reference**: Jiang K, Saha S, Peterson CB. Bayesian Sparse Regression for Microbiome–Metabolite Data Integration. *Statistics in Medicine*. 2026;45(13-14):e70607. doi:10.1002/sim.70607
