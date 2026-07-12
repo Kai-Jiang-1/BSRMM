@@ -1,3 +1,7 @@
+README
+================
+Kai Jiang
+
 # BSRMM
 
 Bayesian Sparse Regression for Microbiome–Metabolite Data Integration
@@ -59,7 +63,7 @@ outcome <- mydata$Y_miss
 
     The nonzero coefficients are:  1 2 3 6 7 8 
 
-    The value of the nonzero coefficients are:  1 -0.8 0.6 -1.5 -0.5 1.2 
+    The value of the nonzero coefficients are:  10 -8 6 -15 -5 12 
 
 ### Model Fitting
 
@@ -167,4 +171,4 @@ If you use this repository, please cite:
 
 **Reference**: Jiang K, Saha S, Peterson CB. Bayesian Sparse Regression
 for Microbiome–Metabolite Data Integration. *Statistics in Medicine*.
-2026;45(13-14):e70607. doi:10.1002/sim.70607
+2026;45(13-14):e70607. <doi:10.1002/sim.70607>
